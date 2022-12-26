@@ -41,12 +41,11 @@ export default function MainContainer(){
                     activeTintColor:'#1B2C56',
                     style: { padding: 10, height: 80}
                 }}
-
                 >
                 
-                <Tab.Screen name={homeName} component= { HomeScreen } />
-                <Tab.Screen name={translateName} component= { TranslateScreen } />
-                <Tab.Screen name={aboutName} component= { AboutScreen } />
+                <Tab.Screen name={homeName} component= { HomeScreen } options={ {title : "Home" , headerTitleAlign:'center' } }/>
+                <Tab.Screen name={translateName} component= { TranslateScreen } options={{ headerTitleAlign:'center' }} />
+                <Tab.Screen name={aboutName} component= { AboutScreen } options={{ headerTitleAlign:'center' }} />
 
             </Tab.Navigator>
         </NavigationContainer>

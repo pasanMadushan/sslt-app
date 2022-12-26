@@ -5,8 +5,9 @@ import {View, Text, StyleSheet} from 'react-native';
 export default function AboutScreen({navigation}){
     return(
         <View style={styles.container}>
+
             <Text>
-                This is About Screen
+              
             </Text>
         </View>
     );
