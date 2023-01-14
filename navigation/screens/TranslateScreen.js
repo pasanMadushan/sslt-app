@@ -2,13 +2,43 @@ import React, {useState} from 'react';
 import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Camera, CameraType} from 'expo-camera';
 import {shareAsync} from 'expo-sharing';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
+import VideoPicker  from '../../components/VideoPicker';
+import Timer from "../../components/Timer";
+import CameraFlip from "../../components/CameraFlip";
+import TranslateBtn from "../../components/buttons/TranslateBtn";
+import RecordingBtn from "../../components/buttons/RecordingBtn";
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        height: '100%',
+    },
+    camera: {
+        // flex: 1,
+        position: 'relative',
+        height: '100%',
+    },
+    cameraView: {
+        height: '70%'
+    },
+
+    buttonContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'transparent',
+        // margin: 64,
+        position: 'absolute',
+        bottom: '5%',
+        alignSelf: 'center'
+    },
+});
 
 export default function TranslateScreen() {
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [translatedText, setTranslatedText] = useState('test');
+    const [translatedText, setTranslatedText] = useState('red');
     const [recording, setRecording] = useState(false);
     const [cameraRef, setCameraRef] = useState(null);
     const [video, setVideo] = useState();
@@ -30,7 +60,9 @@ export default function TranslateScreen() {
         );
     }
     const shareVideo = () => {
-        shareAsync(video.uri);
+        if (video) {
+            shareAsync(video.uri);
+        }
     };
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
@@ -41,16 +73,16 @@ export default function TranslateScreen() {
             quality: 1,
         });
     
-        // console.log(result);
-        
         if (!result.canceled) {
             setVideo(result.assets[0]);
             console.log(result.assets[0].uri);
         }
     };
-    function toggleCameraType() {
+
+    const toggleCameraType = () => {
         setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
     }
+
     return (
         <View style={styles.container}>
 
@@ -59,22 +91,9 @@ export default function TranslateScreen() {
                         ref={ref => {
                             setCameraRef(ref) ;
                         }}>
-                    <View style={styles.videoPickerIcon}>
-                        <Ionicons name="md-images-outline" size={30} color="white" onPress={pickImage} />
-                    </View>
-                    <View style={styles.timer}>
-                        <Text
-                            style={{
-                                color: 'white',
-                                backgroundColor:`${recording ? 'red' : 'transparent'}`,
-                                fontSize:'20', paddingHorizontal:5}}
-                        >
-                            {`00:00:${timer < 10 ? '0' : ''}${timer}`}
-                        </Text>
-                    </View>
-                    <View style={styles.cameraFlipIcon}>
-                        <Ionicons name="md-camera-reverse-outline" size={30} color="white" onPress={toggleCameraType} />
-                    </View>
+                    <VideoPicker pickImage={pickImage} />
+                    <Timer recording={recording} timer={timer}/>
+                    <CameraFlip toggleCameraType={toggleCameraType}/>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
                             style={{ alignSelf: "center"}}
@@ -105,121 +124,15 @@ export default function TranslateScreen() {
                                 }
                             }}
                         >
-                            <View
-                                style={{
-                                    borderWidth: 2,
-                                    borderRadius: 25,
-                                    borderColor: `${recording ? 'white' : 'red'}`,
-                                    height: 50,
-                                    width: 50,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <View
-                                    style={recording ? styles.endRecordingButton : styles.startRecordingButton }
-                                />
-                            </View>
+                            <RecordingBtn recording={recording}/>
                         </TouchableOpacity>
                     </View>
                 </Camera>
             </View>
-
-            <View style={styles.bottomView}>
-                <Button
-                    onPress = {shareVideo}
-                    title="Translate"
-                    style={styles.translateButton}
-                />
-                <Text  style = {styles.translatedText}>
-                    {translatedText}
-                </Text>
-            </View>
+            <TranslateBtn shareVideo={shareVideo} translatedText={translatedText}/>
 
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        height: '100%',
-    },
-    camera: {
-        // flex: 1,
-        position: 'relative',
-        height: '100%',
-    },
-    cameraView: {
-        height: '70%'
-    },
-
-    buttonContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        backgroundColor: 'transparent',
-        // margin: 64,
-        position: 'absolute',
-        bottom: '5%',
-        alignSelf: 'center'
-    },
-    button: {
-        flex: 1,
-        alignSelf: 'flex-end',
-        alignItems: 'center',
-    },
-    bottomView: {
-        height: '25%',
-        marginTop: '5%'
-    },
-    text: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: 'white',
-    },
-    translateButton: {
-        marginTop: 100,
-    },
-    translatedText: {
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 20,
-        marginTop: 20,
-    },
-    startRecordingButton: {
-        borderWidth: 2,
-        borderRadius: 25,
-        borderColor: "red",
-        height: 40,
-        width: 40,
-        backgroundColor: "red",
-    },
-    endRecordingButton: {
-        borderWidth: 2,
-        borderRadius: 0,
-        borderColor: "red",
-        height: 20,
-        width: 20,
-        backgroundColor: "red"
-    },
-    videoPickerIcon: {
-        position:'absolute',
-        bottom: '5.5%',
-        left:'5%',
-        alignSelf: 'flex-start'
-    },
-    timer: {
-        position: 'absolute',
-        top:'5%',
-        alignSelf: 'center'
-    },
-    cameraFlipIcon: {
-        position:'absolute',
-        bottom: '5.5%',
-        right:'5%',
-        alignSelf: 'flex-end'
-    }
-});
    
