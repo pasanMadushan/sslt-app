@@ -1,6 +1,7 @@
 import React,{useState} from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
+import { shareAsync } from 'expo-sharing';
 
 export default function TranslateScreen({navigation}){
     const [type, setType] = useState(CameraType.back);
@@ -38,21 +39,25 @@ export default function TranslateScreen({navigation}){
             <TouchableOpacity
                 style={{ alignSelf: "center" }}
                 onPress={async () => {
-                    if (!recording && !cameraRef) {
+                    if (!recording) {
                         setRecording(true);
                         let options = {
                             quality: "1080p",
                             maxDuration: 60,
                             mute : true
                         }
-                        cameraRef.current.recordAsync(options).then((recordedVideo)=>{
+                        cameraRef.recordAsync(options).then((recordedVideo)=>{
                             setVideo(recordedVideo);
                             setRecording(true);
+                            // alert(recordedVideo);
+                            console.log(recordedVideo);
+                            shareAsync(video.uri);
                         });
                         // console.log("video", video);
                     } else {
                         setRecording(false);
                         cameraRef.stopRecording();
+                        alert('pressed stop');
                     }
                 }}
 >
