@@ -22,6 +22,14 @@ export default function MainContainer(){
             <Tab.Navigator
                 initialRouteName={homeName}
                 screenOptions = {({route}) => ({
+                    headerShown: false,
+                    tabBarActiveTintColor: "#1B2C56",
+                    tabBarStyle: [
+                      {
+                        display: "flex"
+                      },
+                      null
+                    ],
                     tabBarIcon: ({focused, color, size}) => {
                         let iconName;
                         let rn  = route.name;
@@ -37,10 +45,6 @@ export default function MainContainer(){
                         return <Ionicons name={iconName} size={size} color={color} />
                     }
                 })}
-                tabBarOptions = {{
-                    activeTintColor:'#1B2C56',
-                    style: { padding: 10, height: 80}
-                }}
                 >
                 
                 <Tab.Screen name={homeName} component= { HomeScreen } options={ {title : "Home" , headerTitleAlign:'center' } }/>
