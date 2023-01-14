@@ -1,7 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 
-
 export default function AboutScreen({navigation}){
     return(
         <View style={styles.container}>
