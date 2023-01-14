@@ -2,6 +2,8 @@ import React,{useState} from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
 import { shareAsync } from 'expo-sharing';
+import { SyntheticPlatformEmitter } from 'expo-modules-core';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function TranslateScreen({navigation}){
     const [type, setType] = useState(CameraType.back);
@@ -10,11 +12,13 @@ export default function TranslateScreen({navigation}){
     const [recording, setRecording] = useState(false);
     const [cameraRef, setCameraRef] = useState(null);
     const [video, setVideo] = useState();
+    const [timer,setTimer] = useState(0);
+    const [intervalId,setIntervalId] = useState(null);
     if (!permission) {
         // Camera permissions are still loading
         return <View />;
     }
-    
+
     if (!permission.granted) {
         // Camera permissions are not granted yet
         return (
@@ -24,6 +28,10 @@ export default function TranslateScreen({navigation}){
           </View>
         );
     }
+    const shareVideo = () => {
+        shareAsync(video.uri);
+    };
+    
     function toggleCameraType() {
         setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
       }
@@ -35,29 +43,48 @@ export default function TranslateScreen({navigation}){
             ref={ref => {
             setCameraRef(ref) ;
             }}>
+            <View style={{position: 'absolute', top:'5%', alignSelf: 'center'}}>
+                <Text 
+                style={{color: 'white', backgroundColor:`${recording ? 'red' : 'black'}`, fontSize:'20', paddingHorizontal:5}}
+                >
+                    {`00:00:${timer < 10 ? '0' : ''}${timer}`}
+                    </Text>
+            </View>
+            <View style={{position:'absolute', bottom: '5.5%',right:'5%', alignSelf: 'flex-end'}}>
+                <Ionicons name="md-camera-reverse-outline" size={40} color="white" onPress={toggleCameraType} />
+            </View>
             <View style={styles.buttonContainer}>
             <TouchableOpacity
-                style={{ alignSelf: "center" }}
+                style={{ alignSelf: "center"}}
                 onPress={async () => {
                     if (!recording) {
                         setRecording(true);
+                        let intervalId = setInterval(()=>{
+                            setTimer(prevTime => prevTime+1)
+                        },1000);
+                        setIntervalId(intervalId);
                         let options = {
                             quality: "1080p",
-                            maxDuration: 60,
+                            maxDuration: 30,
                             mute : true
                         }
                         cameraRef.recordAsync(options).then((recordedVideo)=>{
                             setVideo(recordedVideo);
-                            setRecording(true);
+                            setRecording(false);
                             // alert(recordedVideo);
                             console.log(recordedVideo);
-                            shareAsync(video.uri);
+                            clearInterval(intervalId);
+                            setTimer(0);
+                            // console.log(recordedVideo.duration);
+                            // shareAsync(video.uri);
                         });
                         // console.log("video", video);
                     } else {
                         setRecording(false);
                         cameraRef.stopRecording();
-                        alert('pressed stop');
+                        clearInterval(intervalId);
+                        setTimer(0);
+                        // alert('pressed stop');
                     }
                 }}
 >
@@ -65,7 +92,7 @@ export default function TranslateScreen({navigation}){
             style={{
             borderWidth: 2,
             borderRadius: 25,
-            borderColor: "red",
+            borderColor: `${recording ? 'white' : 'red'}`,
             height: 50,
             width: 50,
             display: "flex",
@@ -74,14 +101,7 @@ export default function TranslateScreen({navigation}){
             }}
         >
         <View
-        style={{
-            borderWidth: 2,
-            borderRadius: 25,
-            borderColor: "red",
-            height: 40,
-            width: 40,
-            backgroundColor: "red",
-        }}
+        style={recording ? styles.endRecordingButton : styles.startRecordingButton }
         ></View>
     </View>
     </TouchableOpacity>
@@ -91,7 +111,7 @@ export default function TranslateScreen({navigation}){
 
         <View style={styles.bottomView}>
             <Button 
-            onPress = {() => {alert('pressed')}} 
+            onPress = {shareVideo} 
             title="Translate" 
             style={styles.translateButton}
             />
@@ -112,6 +132,7 @@ const styles = StyleSheet.create({
   },
   camera: {
     // flex: 1,
+    position: 'relative',
     height: '100%',
   },
   cameraView: {
@@ -122,7 +143,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     backgroundColor: 'transparent',
-    margin: 64,
+    // margin: 64,
+    position: 'absolute',
+    bottom: '5%',
+    alignSelf: 'center'
   },
   button: {
     flex: 1,
@@ -146,6 +170,22 @@ const styles = StyleSheet.create({
     fontWeight:'bold',
     fontSize:20,
     marginTop: 20,
+  },
+  startRecordingButton: {
+    borderWidth: 2,
+    borderRadius: 25,
+    borderColor: "red",
+    height: 40,
+    width: 40,
+    backgroundColor: "red",
+  },
+  endRecordingButton: {
+    borderWidth: 2,
+    borderRadius: 0,
+    borderColor: "red",
+    height: 20,
+    width: 20,
+    backgroundColor: "red"
   }
 });
    
