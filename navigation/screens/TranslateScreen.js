@@ -4,6 +4,7 @@ import { Camera, CameraType } from 'expo-camera';
 import { shareAsync } from 'expo-sharing';
 import { SyntheticPlatformEmitter } from 'expo-modules-core';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function TranslateScreen({navigation}){
     const [type, setType] = useState(CameraType.back);
@@ -14,6 +15,7 @@ export default function TranslateScreen({navigation}){
     const [video, setVideo] = useState();
     const [timer,setTimer] = useState(0);
     const [intervalId,setIntervalId] = useState(null);
+    
     if (!permission) {
         // Camera permissions are still loading
         return <View />;
@@ -31,7 +33,22 @@ export default function TranslateScreen({navigation}){
     const shareVideo = () => {
         shareAsync(video.uri);
     };
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
     
+        // console.log(result);
+        
+        if (!result.canceled) {
+            setVideo(result.assets[0]);
+            console.log(result.assets[0].uri);
+        }
+      };
     function toggleCameraType() {
         setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
       }
@@ -43,15 +60,18 @@ export default function TranslateScreen({navigation}){
             ref={ref => {
             setCameraRef(ref) ;
             }}>
+            <View style={{position:'absolute', bottom: '5.5%',left:'5%', alignSelf: 'flex-start'}}>
+                <Ionicons name="md-images-outline" size={30} color="white" onPress={pickImage} />
+            </View>
             <View style={{position: 'absolute', top:'5%', alignSelf: 'center'}}>
                 <Text 
-                style={{color: 'white', backgroundColor:`${recording ? 'red' : 'black'}`, fontSize:'20', paddingHorizontal:5}}
+                style={{color: 'white', backgroundColor:`${recording ? 'red' : 'transparent'}`, fontSize:'20', paddingHorizontal:5}}
                 >
                     {`00:00:${timer < 10 ? '0' : ''}${timer}`}
                     </Text>
             </View>
             <View style={{position:'absolute', bottom: '5.5%',right:'5%', alignSelf: 'flex-end'}}>
-                <Ionicons name="md-camera-reverse-outline" size={40} color="white" onPress={toggleCameraType} />
+                <Ionicons name="md-camera-reverse-outline" size={30} color="white" onPress={toggleCameraType} />
             </View>
             <View style={styles.buttonContainer}>
             <TouchableOpacity
