@@ -9,6 +9,13 @@ import CameraFlip from "../../components/CameraFlip";
 import TranslateBtn from "../../components/buttons/TranslateBtn";
 import RecordingBtn from "../../components/buttons/RecordingBtn";
 
+
+import { storage } from '../../config';
+import { getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import mime from 'react-native-mime-types'
+
+import * as FileSystem from 'expo-file-system';
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -59,11 +66,105 @@ export default function TranslateScreen() {
             </View>
         );
     }
+
+
+    // const submitVideo = async()=>{
+    //     const storageRef = ref(storage,'some-child')
+
+    //     console.log("video: ",video)
+        
+    //     console.log("File size: ",await getFileSize())
+
+    //     const metadata = {
+    //         // contentType: 'video/mp4'
+    //     };
+    //     await uploadBytes(storageRef, video.uri, metadata).then((snapshot) => {
+    //         console.log('Uploaded a blob or file!');
+    //       });
+
+
+    // }
+
+    getFileSize = async () => {
+        let fileInfo = await FileSystem.getInfoAsync(video.uri);
+        return fileInfo.size;
+      };
+
+
+    const submitVideo = async () => {
+        const storageRef = ref(storage, 'second.mov');
+        const response = await fetch(video.uri);
+        const blob = await response.blob();
+
+        console.log("video: ",video)
+        
+        console.log("File size: ",await getFileSize())
+    
+        const metadata = {
+            contentType: 'video/quicktime', // Assuming the video is mp4 format
+        };
+    
+        uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
+            console.log('Uploaded a blob or file!');
+        });
+    };
+    
+
+    const submitVideo1 = async () => {
+        const storage = getStorage();
+        const storageRef = ref(storage, 'fgfdgfdgfdg');  // Modify this path as needed
+    
+        console.log("video: ",video)
+        
+        console.log("File size: ",await getFileSize())
+
+        const metadata = {
+            // contentType: 'video/quicktime',
+          
+        };
+    
+        try {
+            const uploadTask =await uploadBytesResumable(storageRef, video.uri, metadata);
+    
+            await uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // You can handle progress updates here
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                }, 
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.log('Error uploading file:', error);
+                }, 
+                () => {
+                    // Handle successful uploads on complete
+                    console.log('File uploaded successfully!');
+                }
+            );
+        } catch (error) {
+            console.log('Error uploading file:', error);
+        }
+
+    }
+
+    
+
+
+
     const shareVideo = () => {
         if (video) {
             shareAsync(video.uri);
+
+
+
+
         }
     };
+
+    
+
+
+
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -129,7 +230,7 @@ export default function TranslateScreen() {
                     </View>
                 </Camera>
             </View>
-            <TranslateBtn shareVideo={shareVideo} translatedText={translatedText}/>
+            <TranslateBtn shareVideo={submitVideo} translatedText={translatedText}/>
 
         </View>
     );
