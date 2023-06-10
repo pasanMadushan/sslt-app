@@ -79,8 +79,7 @@ export default function TranslateScreen() {
         uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
             console.log('Uploaded a blob or file!');
 
-            
-            prediction({"filename":"003_005_001.mp4"}).then((pred)=>{
+            prediction({"filename":"signVideo.mov"}).then((pred)=>{
                 
                 console.log("Pred-class: ", pred)
 
