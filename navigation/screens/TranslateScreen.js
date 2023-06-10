@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
-import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Button, StyleSheet, Text, TouchableOpacity, View, Alert} from 'react-native';
 import {Camera, CameraType} from 'expo-camera';
-import {shareAsync} from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import VideoPicker  from '../../components/VideoPicker';
 import Timer from "../../components/Timer";
@@ -63,24 +62,31 @@ export default function TranslateScreen() {
     }
 
     const submitVideo = async () => {
-        const storageRef = ref(storage, 'second.mov');
+        if (!video) {
+            Alert.alert("No video available", "Please select or record a video first");
+            return;
+        }
+
+        const storageRef = ref(storage, 'signVideo.mov');
         const response = await fetch(video.uri);
         const blob = await response.blob();
-    
+
         const metadata = {
             contentType: 'video/quicktime', // Assuming the video is mp4 format
         };
-    
-        uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
 
+        uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
             console.log('Uploaded a blob or file!');
-            // console.log(snapshot)
+
             const a = getArticlesFromApi()
             console.log(a)
 
-            
+            // set the video state to null after the upload
+            setVideo(null);
         });
     };
+
+
 
 
     const getArticlesFromApi = async () => {
