@@ -9,6 +9,7 @@ import TranslateBtn from "../../components/buttons/TranslateBtn";
 import RecordingBtn from "../../components/buttons/RecordingBtn";
 import { storage } from '../../config';
 import { ref, uploadBytesResumable } from "firebase/storage";
+import { translations } from "../../data/Classes";
 
 const styles = StyleSheet.create({
     container: {
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
 export default function TranslateScreen() {
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [translatedText, setTranslatedText] = useState('red');
+    const [translatedText, setTranslatedText] = useState('Predicted Sign');
     const [recording, setRecording] = useState(false);
     const [cameraRef, setCameraRef] = useState(null);
     const [video, setVideo] = useState();
@@ -78,25 +79,34 @@ export default function TranslateScreen() {
         uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
             console.log('Uploaded a blob or file!');
 
-            const a = getArticlesFromApi()
-            console.log(a)
+            
+            prediction({"filename":"003_005_001.mp4"}).then((pred)=>{
+                
+                console.log("Pred-class: ", pred)
 
-            // set the video state to null after the upload
-            setVideo(null);
+                setTranslatedText(translations[pred])
+
+                // set the video state to null after the upload
+                setVideo(null);
+            });
+    
         });
     };
 
+    const prediction = async (data) => {
+    let response = await fetch('https://sslt2.onrender.com/predict', {
+          method: 'POST', // or 'PUT'
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data), // body data type must match "Content-Type" header
+        });
 
+        let res = await response.json();
 
-
-    const getArticlesFromApi = async () => {
-        let response = await fetch(
-          'https://catfact.ninja/fact'
-        );
-        let json = await response.json();
-        console.log(json.fact);
-        return json;
-      };
+        return res.predicted_class;
+      };      
+        
 
 
     
