@@ -10,6 +10,9 @@ import RecordingBtn from "../../components/buttons/RecordingBtn";
 import { storage } from '../../config';
 import { ref, uploadBytesResumable } from "firebase/storage";
 import { translations } from "../../data/Classes";
+import { ActivityIndicator } from 'react-native';
+import { Video } from 'expo-av';
+
 
 const styles = StyleSheet.create({
     container: {
@@ -40,12 +43,15 @@ const styles = StyleSheet.create({
 export default function TranslateScreen() {
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [translatedText, setTranslatedText] = useState('Predicted Sign');
+    const [translatedText, setTranslatedText] = useState('');
     const [recording, setRecording] = useState(false);
     const [cameraRef, setCameraRef] = useState(null);
     const [video, setVideo] = useState();
     const [timer, setTimer] = useState(0);
     const [intervalId, setIntervalId] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [isVideoPlayback, setIsVideoPlayback] = useState(false);
+
 
     if (!permission) {
         // Camera permissions are still loading
@@ -63,10 +69,13 @@ export default function TranslateScreen() {
     }
 
     const submitVideo = async () => {
+
         if (!video) {
             Alert.alert("No video available", "Please select or record a video first");
             return;
         }
+
+        setLoading(true);
 
         const storageRef = ref(storage, 'signVideo.mov');
         const response = await fetch(video.uri);
@@ -79,12 +88,15 @@ export default function TranslateScreen() {
         uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
             console.log('Uploaded a blob or file!');
 
-            
-            prediction({"filename":"003_005_001.mp4"}).then((pred)=>{
+            prediction({"filename":"signVideo.mov"}).then((pred)=>{
                 
                 console.log("Pred-class: ", pred)
 
                 setTranslatedText(translations[pred])
+
+                setLoading(false);
+
+                setIsVideoPlayback(false);
 
                 // set the video state to null after the upload
                 setVideo(null);
@@ -121,6 +133,7 @@ export default function TranslateScreen() {
     
         if (!result.canceled) {
             setVideo(result.assets[0]);
+            setIsVideoPlayback(true);
             console.log(result.assets[0].uri);
         }
     };
@@ -131,17 +144,28 @@ export default function TranslateScreen() {
 
     return (
         <View style={styles.container}>
-
             <View style={styles.cameraView}>
+            {isVideoPlayback ? (
+                <Video 
+                    source={{ uri: video.uri }} 
+                    rate={1.0}
+                    volume={1.0}
+                    isMuted={false}
+                    resizeMode="cover"
+                    shouldPlay
+                    isLooping
+                    style={{ width: "100%", height: "100%" }}
+                />
+                ) : (
                 <Camera style={styles.camera} type={type}
                         ref={ref => {
-                            setCameraRef(ref) ;
+                            setCameraRef(ref);
                         }}>
                     <VideoPicker pickImage={pickImage} />
                     <Timer recording={recording} timer={timer}/>
                     <CameraFlip toggleCameraType={toggleCameraType}/>
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity
+                    <TouchableOpacity
                             style={{ alignSelf: "center"}}
                             onPress={async () => {
                                 if (!recording) {
@@ -156,9 +180,9 @@ export default function TranslateScreen() {
                                         mute : true
                                     }
                                     cameraRef.recordAsync(options).then((recordedVideo)=>{
-                                        setVideo(recordedVideo);
+                                        setVideo({uri: recordedVideo.uri}); // Ensure the saved object structure is consistent
+                                        setIsVideoPlayback(true);
                                         setRecording(false);
-                                        // console.log(recordedVideo);
                                         clearInterval(intervalId);
                                         setTimer(0);
                                     });
@@ -174,9 +198,14 @@ export default function TranslateScreen() {
                         </TouchableOpacity>
                     </View>
                 </Camera>
+                )}
             </View>
-            <TranslateBtn shareVideo={submitVideo} translatedText={translatedText}/>
-
+            <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
+                {loading ? 
+                    <ActivityIndicator size="large" color="#0000ff" /> :
+                    <TranslateBtn shareVideo={submitVideo} translatedText={translatedText}/>
+                }
+            </View>
         </View>
     );
 }
