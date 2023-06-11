@@ -10,6 +10,7 @@ import RecordingBtn from "../../components/buttons/RecordingBtn";
 import { storage } from '../../config';
 import { ref, uploadBytesResumable } from "firebase/storage";
 import { translations } from "../../data/Classes";
+import { ActivityIndicator } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
@@ -46,6 +47,7 @@ export default function TranslateScreen() {
     const [video, setVideo] = useState();
     const [timer, setTimer] = useState(0);
     const [intervalId, setIntervalId] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     if (!permission) {
         // Camera permissions are still loading
@@ -63,6 +65,8 @@ export default function TranslateScreen() {
     }
 
     const submitVideo = async () => {
+        setLoading(true);
+
         if (!video) {
             Alert.alert("No video available", "Please select or record a video first");
             return;
@@ -79,12 +83,13 @@ export default function TranslateScreen() {
         uploadBytesResumable(storageRef, blob, metadata).then((snapshot) => {
             console.log('Uploaded a blob or file!');
 
-            
-            prediction({"filename":"003_005_001.mp4"}).then((pred)=>{
+            prediction({"filename":"signVideo.mov"}).then((pred)=>{
                 
                 console.log("Pred-class: ", pred)
 
                 setTranslatedText(translations[pred])
+
+                setLoading(false);
 
                 // set the video state to null after the upload
                 setVideo(null);
@@ -176,6 +181,7 @@ export default function TranslateScreen() {
                 </Camera>
             </View>
             <TranslateBtn shareVideo={submitVideo} translatedText={translatedText}/>
+            {loading && <ActivityIndicator size="large" color="#0000ff" />}
 
         </View>
     );
