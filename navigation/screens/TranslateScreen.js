@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: '5%',
         alignSelf: 'center'
-    },
+    }
 });
 
 export default function TranslateScreen() {

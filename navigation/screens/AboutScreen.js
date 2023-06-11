@@ -1,10 +1,10 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, ImageBackground} from 'react-native';
 
 
 export default function AboutScreen({navigation}){
     return(
-        <View style={styles.container}>
+        <ImageBackground source={require('../../assets/background.jpg')} style={styles.container}>
             <Text style={{fontSize:30}}>
                 SSL TRANSLATOR
             </Text>
@@ -36,7 +36,7 @@ export default function AboutScreen({navigation}){
                 {'Dineth  Wijesooriya  \nPasan Madhushan  \nKaveesh Charuka '}
             </Text>
  
-        </View>
+            </ImageBackground>
     );
 }
 

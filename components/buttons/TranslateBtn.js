@@ -1,31 +1,37 @@
 import React from 'react';
-import {Button, StyleSheet, Text, View} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const styles = StyleSheet.create({
     bottomView: {
         height: '25%',
-        marginTop: '5%'
+        marginTop: '5%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    translateButton: {
-        marginTop: 100,
+    button: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: '#1B2C56',
     },
-    translatedText: {
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: 20,
-        marginTop: 20,
+    buttonText: {
+        fontSize: 16,
+        lineHeight: 21,
+        letterSpacing: 0.25,
+        color: 'white',
     },
 });
 
 const TranslateBtn = (props) => {
     return (
         <View style={styles.bottomView}>
-            <Button
-                onPress = {props.shareVideo}
-                title="Translate"
-                style={styles.translateButton}
-            />
-            <Text  style = {styles.translatedText}>
+            <TouchableOpacity style={styles.button} onPress={props.shareVideo}>
+                <Text style={styles.buttonText}>Translate</Text>
+            </TouchableOpacity>
+            <Text style = {styles.buttonText}>
                 {props.translatedText}
             </Text>
         </View>
