@@ -11,6 +11,9 @@ import { storage } from '../../config';
 import { ref, uploadBytesResumable } from "firebase/storage";
 import { translations } from "../../data/Classes";
 import { ActivityIndicator } from 'react-native';
+import { Video } from 'expo-av';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 const styles = StyleSheet.create({
     container: {
@@ -39,15 +42,18 @@ const styles = StyleSheet.create({
 });
 
 export default function TranslateScreen() {
-    const [type, setType] = useState(CameraType.back);
+    const [type, setType] = useState(CameraType.front);
     const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [translatedText, setTranslatedText] = useState('Predicted Sign');
+    const [translatedText, setTranslatedText] = useState('');
     const [recording, setRecording] = useState(false);
     const [cameraRef, setCameraRef] = useState(null);
     const [video, setVideo] = useState();
     const [timer, setTimer] = useState(0);
     const [intervalId, setIntervalId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isVideoPlayback, setIsVideoPlayback] = useState(false);
+    const [showBackToCameraButton, setShowBackToCameraButton] = useState(false);
+
 
     if (!permission) {
         // Camera permissions are still loading
@@ -65,12 +71,13 @@ export default function TranslateScreen() {
     }
 
     const submitVideo = async () => {
-        setLoading(true);
 
         if (!video) {
             Alert.alert("No video available", "Please select or record a video first");
             return;
         }
+
+        setLoading(true);
 
         const storageRef = ref(storage, 'signVideo.mov');
         const response = await fetch(video.uri);
@@ -90,6 +97,8 @@ export default function TranslateScreen() {
                 setTranslatedText(translations[pred])
 
                 setLoading(false);
+
+                setIsVideoPlayback(false);
 
                 // set the video state to null after the upload
                 setVideo(null);
@@ -126,6 +135,8 @@ export default function TranslateScreen() {
     
         if (!result.canceled) {
             setVideo(result.assets[0]);
+            setIsVideoPlayback(true);
+            setShowBackToCameraButton(true);
             console.log(result.assets[0].uri);
         }
     };
@@ -136,17 +147,56 @@ export default function TranslateScreen() {
 
     return (
         <View style={styles.container}>
-
             <View style={styles.cameraView}>
+            {isVideoPlayback ? (
+                <>
+                    <Video 
+                        source={{ uri: video.uri }} 
+                        rate={1.0}
+                        volume={1.0}
+                        isMuted={false}
+                        resizeMode="cover"
+                        shouldPlay
+                        isLooping
+                        style={{ width: "100%", height: "100%" }}
+                    />
+                    {showBackToCameraButton && (
+                        <View style={{ 
+                            position: 'absolute',
+                            bottom: '5%',
+                            width: '100%',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                            <TouchableOpacity 
+                                style={{ 
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    padding: 10,
+                                    borderRadius: 5,
+                                    backgroundColor: 'white',
+                                }}
+                                onPress={() => {
+                                    setIsVideoPlayback(false);
+                                    setShowBackToCameraButton(false);
+                                }}
+                            >
+                                <Icon name="camera" size={20} color="#000" />
+                                <Text style={{ marginLeft: 5 }}>Back to Camera</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </>
+                ) : (
                 <Camera style={styles.camera} type={type}
                         ref={ref => {
-                            setCameraRef(ref) ;
+                            setCameraRef(ref);
                         }}>
                     <VideoPicker pickImage={pickImage} />
                     <Timer recording={recording} timer={timer}/>
                     <CameraFlip toggleCameraType={toggleCameraType}/>
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity
+                    <TouchableOpacity
                             style={{ alignSelf: "center"}}
                             onPress={async () => {
                                 if (!recording) {
@@ -161,9 +211,10 @@ export default function TranslateScreen() {
                                         mute : true
                                     }
                                     cameraRef.recordAsync(options).then((recordedVideo)=>{
-                                        setVideo(recordedVideo);
+                                        setVideo({uri: recordedVideo.uri}); // Ensure the saved object structure is consistent
+                                        setIsVideoPlayback(true);
+                                        setShowBackToCameraButton(true);
                                         setRecording(false);
-                                        // console.log(recordedVideo);
                                         clearInterval(intervalId);
                                         setTimer(0);
                                     });
@@ -179,10 +230,14 @@ export default function TranslateScreen() {
                         </TouchableOpacity>
                     </View>
                 </Camera>
+                )}
             </View>
-            <TranslateBtn shareVideo={submitVideo} translatedText={translatedText}/>
-            {loading && <ActivityIndicator size="large" color="#0000ff" />}
-
+            <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
+                {loading ? 
+                    <ActivityIndicator size="large" color="#0000ff" /> :
+                    <TranslateBtn shareVideo={submitVideo} translatedText={translatedText}/>
+                }
+            </View>
         </View>
     );
 }
