@@ -5,7 +5,11 @@ import {View, Text, StyleSheet, Image} from 'react-native';
 export default function AboutScreen({navigation}){
     return(
         <View style={styles.container}>
-            <Text>
+            <Text style={{fontSize:30}}>
+                SSL TRANSLATOR
+            </Text>
+            <View style={{height:20}}></View>
+            <Text style={{fontSize:20}}>
                 VERSION 1.0
             </Text>
             <View style={{height:20}}></View>
@@ -13,15 +17,25 @@ export default function AboutScreen({navigation}){
             <Image source={require('../../assets/logo.png')} style={styles.img} />
             
             <View style={{height:20}}></View>
-            <Text style = {styles.bodyText}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut dictum faucibus elit sit amet vehicula. 
-            Aenean vel tristique enim. Etiam in tellus tellus. Nullam laoreet lacinia laoreet. Nam porta ac 
-            felis sit amet consequat. Pellentesque fermentum turpis quis lobortis porttitor. Integer orci orci, 
-            hendrerit sit amet arcu at, volutpat dapibus enim. Vestibulum gravida sapien et pharetra vestibulum. 
-            Pellentesque aliquet volutpat eleifend. Cras rhoncus accumsan metus, a mollis mi pellentesque id. Nam sit 
-            amet eros quis purus facilisis gravida molestie eu ligula. Cras tempus metus ac pharetra bibendum. Morbi 
-            non tincidunt tellus.
+
+            <Text style={styles.title}>
+                App Features
             </Text>
+            
+            <Text style={styles.bodyText}>
+                {'1. Record dynamic gesture\n2. Upload a sign video from gallery\n3. Translate sign video into text'}
+            </Text>
+
+            <View style={{height:30}}></View>
+
+            <Text style={styles.title}>
+                Designed By
+            </Text>
+            
+            <Text style={styles.bodyText}>
+                {'Dineth  Wijesooriya  \nPasan Madhushan  \nKaveesh Charuka '}
+            </Text>
+ 
         </View>
     );
 }
@@ -34,11 +48,19 @@ const styles = StyleSheet.create({
        padding : 45
     },
     bodyText:{
-        textAlign:'center'
+        textAlign:'left',
+        fontSize:16,
+        fontStyle:'italic'
     },
     img:{
-        height:75,
-        width:75
-    }
+        height:100,
+        width:100
+    },
+    title:{
+        textAlign:'left',
+        fontSize:16,
+        fontWeight:'500',
+        paddingBottom:15
+    },
    })
    
