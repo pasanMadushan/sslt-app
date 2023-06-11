@@ -12,6 +12,7 @@ import { ref, uploadBytesResumable } from "firebase/storage";
 import { translations } from "../../data/Classes";
 import { ActivityIndicator } from 'react-native';
 import { Video } from 'expo-av';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 const styles = StyleSheet.create({
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
 });
 
 export default function TranslateScreen() {
-    const [type, setType] = useState(CameraType.back);
+    const [type, setType] = useState(CameraType.front);
     const [permission, requestPermission] = Camera.useCameraPermissions();
     const [translatedText, setTranslatedText] = useState('');
     const [recording, setRecording] = useState(false);
@@ -51,6 +52,7 @@ export default function TranslateScreen() {
     const [intervalId, setIntervalId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isVideoPlayback, setIsVideoPlayback] = useState(false);
+    const [showBackToCameraButton, setShowBackToCameraButton] = useState(false);
 
 
     if (!permission) {
@@ -134,6 +136,7 @@ export default function TranslateScreen() {
         if (!result.canceled) {
             setVideo(result.assets[0]);
             setIsVideoPlayback(true);
+            setShowBackToCameraButton(true);
             console.log(result.assets[0].uri);
         }
     };
@@ -146,16 +149,44 @@ export default function TranslateScreen() {
         <View style={styles.container}>
             <View style={styles.cameraView}>
             {isVideoPlayback ? (
-                <Video 
-                    source={{ uri: video.uri }} 
-                    rate={1.0}
-                    volume={1.0}
-                    isMuted={false}
-                    resizeMode="cover"
-                    shouldPlay
-                    isLooping
-                    style={{ width: "100%", height: "100%" }}
-                />
+                <>
+                    <Video 
+                        source={{ uri: video.uri }} 
+                        rate={1.0}
+                        volume={1.0}
+                        isMuted={false}
+                        resizeMode="cover"
+                        shouldPlay
+                        isLooping
+                        style={{ width: "100%", height: "100%" }}
+                    />
+                    {showBackToCameraButton && (
+                        <View style={{ 
+                            position: 'absolute',
+                            bottom: '5%',
+                            width: '100%',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                            <TouchableOpacity 
+                                style={{ 
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    padding: 10,
+                                    borderRadius: 5,
+                                    backgroundColor: 'white',
+                                }}
+                                onPress={() => {
+                                    setIsVideoPlayback(false);
+                                    setShowBackToCameraButton(false);
+                                }}
+                            >
+                                <Icon name="camera" size={20} color="#000" />
+                                <Text style={{ marginLeft: 5 }}>Back to Camera</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </>
                 ) : (
                 <Camera style={styles.camera} type={type}
                         ref={ref => {
@@ -182,6 +213,7 @@ export default function TranslateScreen() {
                                     cameraRef.recordAsync(options).then((recordedVideo)=>{
                                         setVideo({uri: recordedVideo.uri}); // Ensure the saved object structure is consistent
                                         setIsVideoPlayback(true);
+                                        setShowBackToCameraButton(true);
                                         setRecording(false);
                                         clearInterval(intervalId);
                                         setTimer(0);
