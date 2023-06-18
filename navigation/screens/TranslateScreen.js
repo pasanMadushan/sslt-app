@@ -134,6 +134,12 @@ export default function TranslateScreen() {
         });
     
         if (!result.canceled) {
+
+            if (result.assets[0].duration > 6500) {
+                Alert.alert('Video too long', 'Please choose a video of 6 seconds or less');
+                return;
+            }
+
             setVideo(result.assets[0]);
             setIsVideoPlayback(true);
             setShowBackToCameraButton(true);
@@ -207,7 +213,7 @@ export default function TranslateScreen() {
                                     setIntervalId(intervalId);
                                     let options = {
                                         quality: "1080p",
-                                        maxDuration: 30,
+                                        maxDuration: 6,
                                         mute : true
                                     }
                                     cameraRef.recordAsync(options).then((recordedVideo)=>{
