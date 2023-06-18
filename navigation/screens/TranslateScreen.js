@@ -84,8 +84,8 @@ export default function TranslateScreen() {
         const blob = await response.blob();
 
         // Calculate the size of the video in MB
-        // const sizeInMB = blob.size / 1024 / 1024;
-        // console.log("Video size: ", sizeInMB, " MB");
+        const sizeInMB = blob.size / 1024 / 1024;
+        console.log("Video size: ", sizeInMB, " MB");
 
         const metadata = {
             contentType: 'video/quicktime', // Assuming the video is mp4 format
@@ -132,10 +132,16 @@ export default function TranslateScreen() {
             mediaTypes: ImagePicker.MediaTypeOptions.Videos,
             allowsEditing: true,
             aspect: [4, 3],
-            quality: 1,
+            quality: 1
         });
     
         if (!result.canceled) {
+
+            if (result.assets[0].duration > 7000) {
+                Alert.alert('Video too long', 'Please choose a video of 6 seconds or less');
+                return;
+            }
+
             setVideo(result.assets[0]);
             setIsVideoPlayback(true);
             setShowBackToCameraButton(true);
