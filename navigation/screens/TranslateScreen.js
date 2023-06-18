@@ -83,6 +83,10 @@ export default function TranslateScreen() {
         const response = await fetch(video.uri);
         const blob = await response.blob();
 
+        // Calculate the size of the video in MB
+        // const sizeInMB = blob.size / 1024 / 1024;
+        // console.log("Video size: ", sizeInMB, " MB");
+
         const metadata = {
             contentType: 'video/quicktime', // Assuming the video is mp4 format
         };
@@ -121,8 +125,6 @@ export default function TranslateScreen() {
         return res.predicted_class;
       };      
         
-
-
     
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
@@ -146,6 +148,7 @@ export default function TranslateScreen() {
     }
 
     return (
+    
         <View style={styles.container}>
             <View style={styles.cameraView}>
             {isVideoPlayback ? (
@@ -206,8 +209,8 @@ export default function TranslateScreen() {
                                     },1000);
                                     setIntervalId(intervalId);
                                     let options = {
-                                        quality: "1080p",
-                                        maxDuration: 30,
+                                        quality: "720p",
+                                        maxDuration: 6,
                                         mute : true
                                     }
                                     cameraRef.recordAsync(options).then((recordedVideo)=>{
@@ -239,6 +242,7 @@ export default function TranslateScreen() {
                 }
             </View>
         </View>
+        
     );
 }
 
